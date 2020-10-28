@@ -48,3 +48,19 @@ func (n Nop) Begin() (Transaction, error) {
 func (n Nop) Features() Feature {
 	return 0
 }
+
+func (n Nop) SetCounter(key []byte, value int64) error {
+	return ErrFeatureNotSupported
+}
+func (n Nop) IncreaseCounter(key []byte, incr int64) error {
+	return ErrFeatureNotSupported
+}
+func (n Nop) SetCounterWithTTL(key []byte, value int64, ttl time.Duration) error {
+	return ErrFeatureNotSupported
+}
+func (n Nop) GetCounter(key []byte) (int64, error) {
+	return 0, ErrFeatureNotSupported
+}
+func (n Nop) DelCounter(key []byte) error {
+	return ErrFeatureNotSupported
+}

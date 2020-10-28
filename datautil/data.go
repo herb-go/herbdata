@@ -1,8 +1,6 @@
 package datautil
 
 import (
-	"bytes"
-	"io"
 	"math"
 
 	"github.com/herb-go/herbdata"
@@ -87,17 +85,8 @@ func Decode(d []byte, data interface{}) error {
 		*data = d
 	case *string:
 		*data = string(d)
-	case func(r io.Reader) error:
-		buf := bytes.NewBuffer(d)
-		return data(buf)
-	case interface{}:
-		e, ok := data.(herbdata.DataDecoder)
-		if ok {
-			buf := bytes.NewBuffer(d)
-			return e.DecodeData(buf)
-
-		}
-		return ErrDataTypeNotSupported
+	case func(data []byte) error:
+		return data(d)
 	default:
 		return ErrDataTypeNotSupported
 	}
@@ -213,24 +202,8 @@ func Encode(data interface{}) ([]byte, error) {
 		return data, nil
 	case string:
 		return []byte(data), nil
-	case func(w io.Writer) error:
-		buf := bytes.NewBuffer(nil)
-		err := data(buf)
-		if err != nil {
-			return nil, err
-		}
-		return buf.Bytes(), nil
-	case interface{}:
-		e, ok := data.(herbdata.DataEncoder)
-		if ok {
-			buf := bytes.NewBuffer(nil)
-			err := e.EncodeData(buf)
-			if err != nil {
-				return nil, err
-			}
-			return buf.Bytes(), nil
-
-		}
+	case func() ([]byte, error):
+		return data()
 	}
 	return nil, ErrDataTypeNotSupported
 }

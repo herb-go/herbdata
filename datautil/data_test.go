@@ -222,14 +222,6 @@ func TestData(t *testing.T) {
 	vbs = []byte("1")
 	rbs = []byte("0")
 
-	err = test(Encoder(vbs), Decoder(&rbs))
-	if err != nil || bytes.Compare(vbs, rbs) != 0 {
-		t.Fatal(err, vbs, rbs)
-	}
-
-	vbs = []byte("1")
-	rbs = []byte("0")
-
 	err = test(Encoder(vbs).EncodeData, Decoder(&rbs).DecodeData)
 	if err != nil || bytes.Compare(vbs, rbs) != 0 {
 		t.Fatal(err, vbs, rbs)

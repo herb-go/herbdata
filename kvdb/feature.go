@@ -3,8 +3,12 @@ package kvdb
 type Feature int64
 
 const (
-	FeatureCore = Feature(1 << iota)
+	FeatureKeyValue = Feature(1 << iota)
+	FeaturePersistent
+	FeatureReverseIter
 	FeatureIter
 	FeatureTTL
+	FeatureAtomic
 	FeatureTransaction
+	FeatureCounter
 )

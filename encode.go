@@ -1,23 +1,34 @@
 package herbdata
 
-import "io"
-
 type DataEncoder interface {
-	EncodeData(w io.Writer) error
+	EncodeData() ([]byte, error)
 }
 
 type DataDecoder interface {
-	DecodeData(r io.Reader) error
+	DecodeData([]byte) error
 }
 
-type DataEncoderFunc func(w io.Writer) error
+type DataEncoderFunc func() ([]byte, error)
 
-func (f DataEncoderFunc) EncodeData(w io.Writer) error {
-	return f(w)
+func (f DataEncoderFunc) EncodeData() ([]byte, error) {
+	return f()
 }
 
-type DataDecoderFunc func(r io.Reader) error
+type DataDecoderFunc func([]byte) error
 
-func (f DataDecoderFunc) DecodeData(r io.Reader) error {
-	return f(r)
+func (f DataDecoderFunc) DecodeData(data []byte) error {
+	return f(data)
+}
+
+type DataMarshaler interface {
+	MarshalData(interface{}) ([]byte, error)
+}
+
+type DataUnmarshaler interface {
+	UnmarshalData([]byte, interface{}) error
+}
+
+type DataEncoding interface {
+	DataMarshaler
+	DataUnmarshaler
 }
