@@ -3,6 +3,7 @@ package kvdb
 import "errors"
 
 var ErrFeatureNotSupported = errors.New("feature not supported")
+var ErrFeatureSupported = errors.New("feature supported")
 var ErrInvalidateKey = errors.New("invalidate key")
 var ErrKeyNotFound = errors.New("key not found")
 

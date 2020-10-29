@@ -64,3 +64,11 @@ func (n Nop) GetCounter(key []byte) (int64, error) {
 func (n Nop) DelCounter(key []byte) error {
 	return ErrFeatureNotSupported
 }
+
+func (n Nop) Insert(Key []byte, value []byte) (bool, error) {
+	return false, ErrFeatureNotSupported
+}
+func (n Nop) Update(key []byte, value []byte) (bool, error) {
+	return false, ErrFeatureNotSupported
+
+}

@@ -8,12 +8,19 @@ type Database struct {
 	Driver
 }
 
-func (d *Database) MustSupportFeatures(features Feature) {
-	if !(features&d.Driver.Features() == features) {
-		panic(ErrFeatureNotSupported)
+func (d *Database) ShouldSupport(features Feature) error {
+	if !d.Driver.Features().SupportAll(features) {
+		return ErrFeatureNotSupported
 	}
+	return nil
 }
-func NewDatabase() *Database {
+func (d *Database) ShouldNotSupport(features Feature) error {
+	if d.Driver.Features().SupportAny(features) {
+		return ErrFeatureSupported
+	}
+	return nil
+}
+func New() *Database {
 	return &Database{}
 }
 
@@ -34,6 +41,8 @@ type Driver interface {
 	SetWithTTL(key []byte, value []byte, ttl time.Duration) error
 	//Begin begin new transaction
 	Begin() (Transaction, error)
+	Insert(Key []byte, value []byte) (bool, error)
+	Update(key []byte, value []byte) (bool, error)
 	SetCounter(key []byte, value int64) error
 	IncreaseCounter(key []byte, incr int64) error
 	SetCounterWithTTL(key []byte, value int64, ttl time.Duration) error
