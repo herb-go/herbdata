@@ -2,7 +2,7 @@ package kvdb
 
 import "time"
 
-var passthroghtFeatures = FeatureTTL | FeatureStore
+var passthroghtFeatures = FeatureTTLStore | FeatureStore
 
 type passthroght struct {
 	Nop
@@ -15,7 +15,7 @@ func (p *passthroght) Set(key []byte, value []byte) error {
 
 //Get get value by given key
 func (p *passthroght) Get(key []byte) ([]byte, error) {
-	return nil, ErrKeyNotFound
+	return nil, ErrNotFound
 }
 
 //Del delete value by given key

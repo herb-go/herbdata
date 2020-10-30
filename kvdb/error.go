@@ -5,7 +5,7 @@ import "errors"
 var ErrFeatureNotSupported = errors.New("feature not supported")
 var ErrFeatureSupported = errors.New("feature supported")
 var ErrInvalidateKey = errors.New("invalidate key")
-var ErrKeyNotFound = errors.New("key not found")
+var ErrNotFound = errors.New("data not found")
 
 //ErrEntryTooLarge raised when data is too large to store.
 var ErrEntryTooLarge = errors.New("data entry too large")

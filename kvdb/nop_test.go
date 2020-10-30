@@ -1,3 +1,3 @@
 package kvdb
 
-var _ Database = Nop{}
+var _ Driver = Nop{}

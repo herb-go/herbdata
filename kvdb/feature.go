@@ -11,13 +11,14 @@ func (f Feature) SupportAny(dst Feature) bool {
 
 const (
 	FeatureStore = Feature(1 << iota)
-	FeatureTTL
+	FeatureTTLStore
 	FeaturePersistent
 	FeatureStable
-	FeatureTransaction
 	FeatureCounter
+	FeatureTTLCounter
 	FeatureNext
 	FeaturePrev
 	FeatureInsert
 	FeatureUpdate
+	FeatureTransaction
 )
