@@ -42,7 +42,9 @@ type Driver interface {
 	//Begin begin new transaction
 	Begin() (Transaction, error)
 	Insert(Key []byte, value []byte) (bool, error)
+	InsertWithTTL(Key []byte, value []byte, ttl time.Duration) (bool, error)
 	Update(key []byte, value []byte) (bool, error)
+	UpdateWithTTL(key []byte, value []byte, ttl time.Duration) (bool, error)
 	SetCounter(key []byte, value int64) error
 	IncreaseCounter(key []byte, incr int64) error
 	SetCounterWithTTL(key []byte, value int64, ttl time.Duration) error
