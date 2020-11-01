@@ -19,6 +19,8 @@ const (
 	FeatureNext
 	FeaturePrev
 	FeatureInsert
+	FeatureTTLInsert
 	FeatureUpdate
+	FeatureTTLUpdate
 	FeatureTransaction
 )
