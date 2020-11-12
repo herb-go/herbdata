@@ -1,6 +1,7 @@
 package featuretestutil
 
 import (
+	"sort"
 	"sync"
 	"testing"
 	"time"
@@ -67,7 +68,26 @@ func (t *testStore) Del(key []byte) error {
 
 //Next return values after key not more than given limit
 func (t *testStore) Next(iter []byte, limit int) (keys [][]byte, newiter []byte, err error) {
-	return nil, nil, kvdb.ErrFeatureNotSupported
+	if limit <= 0 {
+		return nil, iter, nil
+	}
+	iterstr := string(iter)
+	result := [][]byte{}
+	keylist := []string{}
+	t.m.Range(func(key interface{}, data interface{}) bool {
+		keylist = append(keylist, key.(string))
+		return true
+	})
+	sort.Strings(keylist)
+	for _, v := range keylist {
+		if v > iterstr {
+			result = append(result, []byte(v))
+			if limit <= len(result) {
+				return result, result[len(result)-1], nil
+			}
+		}
+	}
+	return result, nil, nil
 }
 
 //SetWithTTL set value by given key and ttl
@@ -93,7 +113,8 @@ func (t *testStore) Features() kvdb.Feature {
 		kvdb.FeatureUpdate |
 		kvdb.FeatureTTLUpdate |
 		kvdb.FeatureCounter |
-		kvdb.FeatureTTLCounter
+		kvdb.FeatureTTLCounter |
+		kvdb.FeatureNext
 }
 
 func (t *testStore) SetCounter(key []byte, value int64) error {
