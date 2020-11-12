@@ -19,8 +19,8 @@ func (n Nop) Get(key []byte) ([]byte, error) {
 	return nil, ErrFeatureNotSupported
 }
 
-//Del delete value by given key
-func (n Nop) Del(key []byte) error {
+//Delete delete value by given key
+func (n Nop) Delete(key []byte) error {
 	return ErrFeatureNotSupported
 }
 
@@ -60,7 +60,7 @@ func (n Nop) SetCounterWithTTL(key []byte, value int64, ttl time.Duration) error
 func (n Nop) GetCounter(key []byte) (int64, error) {
 	return 0, ErrFeatureNotSupported
 }
-func (n Nop) DelCounter(key []byte) error {
+func (n Nop) DeleteCounter(key []byte) error {
 	return ErrFeatureNotSupported
 }
 

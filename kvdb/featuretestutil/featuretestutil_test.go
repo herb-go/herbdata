@@ -58,8 +58,8 @@ func (t *testStore) get(key []byte) ([]byte, error) {
 
 }
 
-//Del delete value by given key
-func (t *testStore) Del(key []byte) error {
+//Delete delete value by given key
+func (t *testStore) Delete(key []byte) error {
 	t.locker.Lock()
 	defer t.locker.Unlock()
 	t.m.Delete(string(key))
@@ -164,7 +164,7 @@ func (t *testStore) getCounter(key []byte) int64 {
 	}
 	return e.data
 }
-func (t *testStore) DelCounter(key []byte) error {
+func (t *testStore) DeleteCounter(key []byte) error {
 	t.locker.Lock()
 	defer t.locker.Unlock()
 	t.c.Delete(string(key))

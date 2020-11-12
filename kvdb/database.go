@@ -31,8 +31,8 @@ type Driver interface {
 	Set(key []byte, value []byte) error
 	//Get get value by given key
 	Get(key []byte) ([]byte, error)
-	//Del delete value by given key
-	Del(key []byte) error
+	//Delete delete value by given key
+	Delete(key []byte) error
 	//Next return keys after key not more than given limit
 	Next(iter []byte, limit int) (keys [][]byte, newiter []byte, err error)
 	//SetWithTTL set value by given key and ttl
@@ -48,7 +48,7 @@ type Driver interface {
 	IncreaseCounter(key []byte, incr int64) (int64, error)
 	IncreaseCounterWithTTL(key []byte, incr int64, ttl time.Duration) (int64, error)
 	GetCounter(key []byte) (int64, error)
-	DelCounter(key []byte) error
+	DeleteCounter(key []byte) error
 	//Features return supported features
 	Features() Feature
 }
