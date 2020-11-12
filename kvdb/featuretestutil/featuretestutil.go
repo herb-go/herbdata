@@ -29,8 +29,10 @@ const DataCounterStep = int64(2)
 //DataCounterUpdated test counter data updated
 const DataCounterUpdated = int64(3)
 
+//KeyListForNext test key list for next
 var KeyListForNext = []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"}
 
+//CounterKeyListForNext test counter key list for next
 var CounterKeyListForNext = []string{"1", "2", "3", "4", "5"}
 
 //Tester tester struct
@@ -317,16 +319,28 @@ func TestFeatureTTLStoreAndFeatureTTLCounter(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureNext test driver FeatureNext
 func TestFeatureNext(driver kvdb.Driver, t *Tester) {
-	if driver.Features().SupportAll(kvdb.FeatureNext) {
+	if driver.Features().SupportAll(kvdb.FeatureNext) && driver.Features().SupportAny(kvdb.FeatureStore|kvdb.FeatureTTLStore) {
 		var err error
 		var keys [][]byte
 		for _, v := range KeyListForNext {
-			err = driver.Set([]byte(v), DataSuccess)
-			t.Assert(err == nil, err)
+			if driver.Features().SupportAny(kvdb.FeatureStore) {
+				err = driver.Set([]byte(v), DataSuccess)
+				t.Assert(err == nil, err)
+			}
+			if driver.Features().SupportAny(kvdb.FeatureTTLStore) {
+				err = driver.SetWithTTL([]byte(v), DataSuccess, time.Hour)
+				t.Assert(err == nil, err)
+			}
 		}
 		for _, v := range CounterKeyListForNext {
-			err = driver.SetCounter([]byte(v), DataCounterSuccess)
-			t.Assert(err == nil, err)
+			if driver.Features().SupportAny(kvdb.FeatureCounter) {
+				err = driver.SetCounter([]byte(v), DataCounterSuccess)
+				t.Assert(err == nil, err)
+			}
+			if driver.Features().SupportAny(kvdb.FeatureTTLCounter) {
+				err = driver.SetCounterWithTTL([]byte(v), DataCounterSuccess, time.Hour)
+				t.Assert(err == nil, err)
+			}
 		}
 		result := []string{}
 		iter := []byte{}
