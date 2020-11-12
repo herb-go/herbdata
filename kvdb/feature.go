@@ -3,7 +3,7 @@ package kvdb
 type Feature int64
 
 func (f Feature) SupportAll(dst Feature) bool {
-	return f&dst == f
+	return f&dst == dst
 }
 func (f Feature) SupportAny(dst Feature) bool {
 	return f&dst != 0

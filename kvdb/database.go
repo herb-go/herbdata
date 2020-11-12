@@ -34,9 +34,7 @@ type Driver interface {
 	//Del delete value by given key
 	Del(key []byte) error
 	//Next return keys after key not more than given limit
-	Next(key []byte, limit int) ([][]byte, error)
-	//Prev return keys before key not more than given limit
-	Prev(key []byte, limit int) ([][]byte, error)
+	Next(iter []byte, limit int) (keys [][]byte, newiter []byte, err error)
 	//SetWithTTL set value by given key and ttl
 	SetWithTTL(key []byte, value []byte, ttl time.Duration) error
 	//Begin begin new transaction
@@ -46,8 +44,9 @@ type Driver interface {
 	Update(key []byte, value []byte) (bool, error)
 	UpdateWithTTL(key []byte, value []byte, ttl time.Duration) (bool, error)
 	SetCounter(key []byte, value int64) error
-	IncreaseCounter(key []byte, incr int64) error
 	SetCounterWithTTL(key []byte, value int64, ttl time.Duration) error
+	IncreaseCounter(key []byte, incr int64) (int64, error)
+	IncreaseCounterWithTTL(key []byte, incr int64, ttl time.Duration) (int64, error)
 	GetCounter(key []byte) (int64, error)
 	DelCounter(key []byte) error
 	//Features return supported features

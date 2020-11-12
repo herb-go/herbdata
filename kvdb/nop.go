@@ -25,13 +25,8 @@ func (n Nop) Del(key []byte) error {
 }
 
 //Next return values after key not more than given limit
-func (n Nop) Next(key []byte, limit int) ([][]byte, error) {
-	return nil, ErrFeatureNotSupported
-}
-
-//Prev return values before key not more than given limit
-func (n Nop) Prev(key []byte, limit int) ([][]byte, error) {
-	return nil, ErrFeatureNotSupported
+func (n Nop) Next(iter []byte, limit int) (keys [][]byte, newiter []byte, err error) {
+	return nil, nil, ErrFeatureNotSupported
 }
 
 //SetWithTTL set value by given key and ttl
@@ -52,9 +47,13 @@ func (n Nop) Features() Feature {
 func (n Nop) SetCounter(key []byte, value int64) error {
 	return ErrFeatureNotSupported
 }
-func (n Nop) IncreaseCounter(key []byte, incr int64) error {
-	return ErrFeatureNotSupported
+func (n Nop) IncreaseCounter(key []byte, incr int64) (int64, error) {
+	return 0, ErrFeatureNotSupported
 }
+func (n Nop) IncreaseCounterWithTTL(key []byte, incr int64, ttl time.Duration) (int64, error) {
+	return 0, ErrFeatureNotSupported
+}
+
 func (n Nop) SetCounterWithTTL(key []byte, value int64, ttl time.Duration) error {
 	return ErrFeatureNotSupported
 }
@@ -68,7 +67,12 @@ func (n Nop) DelCounter(key []byte) error {
 func (n Nop) Insert(Key []byte, value []byte) (bool, error) {
 	return false, ErrFeatureNotSupported
 }
+func (n Nop) InsertWithTTL(Key []byte, value []byte, ttl time.Duration) (bool, error) {
+	return false, ErrFeatureNotSupported
+}
+func (n Nop) UpdateWithTTL(key []byte, value []byte, ttl time.Duration) (bool, error) {
+	return false, ErrFeatureNotSupported
+}
 func (n Nop) Update(key []byte, value []byte) (bool, error) {
 	return false, ErrFeatureNotSupported
-
 }
