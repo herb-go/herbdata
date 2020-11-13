@@ -6,17 +6,113 @@ import (
 	"testing"
 	"time"
 
+	"github.com/herb-go/herbdata"
 	"github.com/herb-go/herbdata/kvdb"
 )
 
 type entiy struct {
 	data    []byte
-	expired *time.Time
+	expired *int64
 }
 
 type counter struct {
 	data    int64
-	expired *time.Time
+	expired *int64
+}
+
+type transactionEnity struct {
+	entiy
+	deleted bool
+}
+
+type testTransaction struct {
+	driver *testStore
+	locker sync.Mutex
+	data   map[string]*transactionEnity
+}
+
+func (t *testTransaction) Rollback() error {
+	t.locker.Lock()
+	defer t.locker.Unlock()
+	t.data = map[string]*transactionEnity{}
+	return nil
+}
+func (t *testTransaction) Commit() error {
+	t.locker.Lock()
+	defer t.locker.Unlock()
+	t.driver.locker.Lock()
+	defer t.driver.locker.Unlock()
+	for k, v := range t.data {
+		if v.deleted {
+			t.driver.m.Delete(k)
+		} else {
+			t.driver.m.Store(k, &v.entiy)
+		}
+	}
+	return nil
+}
+
+func (t *testTransaction) IsolationLevel() kvdb.IsolationLevel {
+	return kvdb.IsolationLevelBatch
+}
+
+//Set set value by given key
+func (t *testTransaction) Set(key []byte, value []byte) error {
+	t.locker.Lock()
+	defer t.locker.Unlock()
+	t.data[string(key)] = &transactionEnity{
+		entiy: entiy{
+			data: value,
+		},
+	}
+	return nil
+}
+
+//Get get value by given key
+func (t *testTransaction) Get(key []byte) ([]byte, error) {
+	t.locker.Lock()
+	defer t.locker.Unlock()
+	v, ok := t.data[string(key)]
+	if !ok {
+		return t.driver.Get(key)
+	}
+	if v.deleted {
+		return nil, herbdata.ErrNotFound
+	}
+	if v.entiy.expired != nil && *v.entiy.expired < time.Now().Unix() {
+		return nil, herbdata.ErrNotFound
+	}
+	return v.entiy.data, nil
+}
+
+//Delete delete value by given key
+func (t *testTransaction) Delete(key []byte) error {
+	t.locker.Lock()
+	defer t.locker.Unlock()
+	t.data[string(key)] = &transactionEnity{deleted: true}
+	return nil
+}
+func (t *testTransaction) SetWithTTL(key []byte, value []byte, ttl int64) error {
+	t.locker.Lock()
+	defer t.locker.Unlock()
+	if ttl <= 0 {
+		return herbdata.ErrInvalidatedTTL
+	}
+	expired := time.Now().Unix() + ttl
+	t.data[string(key)] = &transactionEnity{
+		entiy: entiy{
+			data:    value,
+			expired: &expired,
+		},
+	}
+	return nil
+
+}
+
+func newTestTransaction() *testTransaction {
+	return &testTransaction{
+		data: map[string]*transactionEnity{},
+	}
 }
 
 type testStore struct {
@@ -48,11 +144,11 @@ func (t *testStore) Get(key []byte) ([]byte, error) {
 func (t *testStore) get(key []byte) ([]byte, error) {
 	v, ok := t.m.Load(string(key))
 	if !ok {
-		return nil, kvdb.ErrNotFound
+		return nil, herbdata.ErrNotFound
 	}
 	e := v.(*entiy)
-	if e.expired != nil && e.expired.UnixNano() < time.Now().UnixNano() {
-		return nil, kvdb.ErrNotFound
+	if e.expired != nil && *e.expired < time.Now().Unix() {
+		return nil, herbdata.ErrNotFound
 	}
 	return e.data, nil
 
@@ -69,8 +165,10 @@ func (t *testStore) Delete(key []byte) error {
 //Next return values after key not more than given limit
 func (t *testStore) Next(iter []byte, limit int) (keys [][]byte, newiter []byte, err error) {
 	if limit <= 0 {
-		return nil, iter, nil
+		return nil, nil, kvdb.ErrUnsupportedNextLimit
 	}
+	t.locker.Lock()
+	defer t.locker.Unlock()
 	iterstr := string(iter)
 	result := [][]byte{}
 	keylist := []string{}
@@ -91,17 +189,22 @@ func (t *testStore) Next(iter []byte, limit int) (keys [][]byte, newiter []byte,
 }
 
 //SetWithTTL set value by given key and ttl
-func (t *testStore) SetWithTTL(key []byte, value []byte, ttl time.Duration) error {
+func (t *testStore) SetWithTTL(key []byte, value []byte, ttl int64) error {
 	t.locker.Lock()
 	defer t.locker.Unlock()
-	expired := time.Now().Add(ttl)
+	if ttl <= 0 {
+		return herbdata.ErrInvalidatedTTL
+	}
+	expired := time.Now().Unix() + ttl
 	t.m.Store(string(key), &entiy{data: value, expired: &expired})
 	return nil
 }
 
 //Begin begin new transaction
 func (t *testStore) Begin() (kvdb.Transaction, error) {
-	return nil, kvdb.ErrFeatureNotSupported
+	trans := newTestTransaction()
+	trans.driver = t
+	return trans, nil
 }
 
 //Features return supported features
@@ -114,7 +217,8 @@ func (t *testStore) Features() kvdb.Feature {
 		kvdb.FeatureTTLUpdate |
 		kvdb.FeatureCounter |
 		kvdb.FeatureTTLCounter |
-		kvdb.FeatureNext
+		kvdb.FeatureNext |
+		kvdb.FeatureTransaction
 }
 
 func (t *testStore) SetCounter(key []byte, value int64) error {
@@ -123,10 +227,14 @@ func (t *testStore) SetCounter(key []byte, value int64) error {
 	t.c.Store(string(key), &counter{data: value})
 	return nil
 }
-func (t *testStore) SetCounterWithTTL(key []byte, value int64, ttl time.Duration) error {
+func (t *testStore) SetCounterWithTTL(key []byte, value int64, ttl int64) error {
+	if ttl <= 0 {
+		return herbdata.ErrInvalidatedTTL
+	}
 	t.locker.Lock()
 	defer t.locker.Unlock()
-	expired := time.Now().Add(ttl)
+	expired := time.Now().Unix() + ttl
+
 	t.c.Store(string(key), &counter{data: value, expired: &expired})
 	return nil
 }
@@ -138,12 +246,16 @@ func (t *testStore) IncreaseCounter(key []byte, incr int64) (int64, error) {
 	t.c.Store(string(key), &counter{data: final})
 	return final, nil
 }
-func (t *testStore) IncreaseCounterWithTTL(key []byte, incr int64, ttl time.Duration) (int64, error) {
+func (t *testStore) IncreaseCounterWithTTL(key []byte, incr int64, ttl int64) (int64, error) {
+	if ttl <= 0 {
+		return 0, herbdata.ErrInvalidatedTTL
+	}
 	t.locker.Lock()
 	defer t.locker.Unlock()
 	v := t.getCounter(key)
-	expired := time.Now().Add(ttl)
+	expired := time.Now().Unix() + ttl
 	final := v + incr
+
 	t.c.Store(string(key), &counter{data: final, expired: &expired})
 	return final, nil
 }
@@ -159,7 +271,7 @@ func (t *testStore) getCounter(key []byte) int64 {
 		return 0
 	}
 	e := v.(*counter)
-	if e.expired != nil && e.expired.UnixNano() < time.Now().UnixNano() {
+	if e.expired != nil && *e.expired < time.Now().Unix() {
 		return 0
 	}
 	return e.data
@@ -177,23 +289,26 @@ func (t *testStore) Insert(key []byte, value []byte) (bool, error) {
 	_, err := t.get(key)
 	if err == nil {
 		return false, nil
-	} else if err != kvdb.ErrNotFound {
+	} else if err != herbdata.ErrNotFound {
 		return false, err
 	}
 	t.m.Store(string(key), &entiy{data: value})
 	return true, nil
 }
 
-func (t *testStore) InsertWithTTL(key []byte, value []byte, ttl time.Duration) (bool, error) {
+func (t *testStore) InsertWithTTL(key []byte, value []byte, ttl int64) (bool, error) {
+	if ttl <= 0 {
+		return false, herbdata.ErrInvalidatedTTL
+	}
 	t.locker.Lock()
 	defer t.locker.Unlock()
 	_, err := t.get(key)
 	if err == nil {
 		return false, nil
-	} else if err != kvdb.ErrNotFound {
+	} else if err != herbdata.ErrNotFound {
 		return false, err
 	}
-	expired := time.Now().Add(ttl)
+	expired := time.Now().Unix() + ttl
 	t.m.Store(string(key), &entiy{data: value, expired: &expired})
 	return true, nil
 }
@@ -201,7 +316,7 @@ func (t *testStore) Update(key []byte, value []byte) (bool, error) {
 	t.locker.Lock()
 	defer t.locker.Unlock()
 	_, err := t.get(key)
-	if err == kvdb.ErrNotFound {
+	if err == herbdata.ErrNotFound {
 		return false, nil
 	} else if err != nil {
 		return false, err
@@ -209,19 +324,27 @@ func (t *testStore) Update(key []byte, value []byte) (bool, error) {
 	t.m.Store(string(key), &entiy{data: value})
 	return true, nil
 }
-func (t *testStore) UpdateWithTTL(key []byte, value []byte, ttl time.Duration) (bool, error) {
+func (t *testStore) UpdateWithTTL(key []byte, value []byte, ttl int64) (bool, error) {
+	if ttl <= 0 {
+		return false, herbdata.ErrInvalidatedTTL
+	}
 	t.locker.Lock()
 	defer t.locker.Unlock()
 	_, err := t.get(key)
-	if err == kvdb.ErrNotFound {
+	if err == herbdata.ErrNotFound {
 		return false, nil
 	} else if err != nil {
 		return false, err
 	}
-	expired := time.Now().Add(ttl)
+	expired := time.Now().Unix() + ttl
 	t.m.Store(string(key), &entiy{data: value, expired: &expired})
 	return true, nil
 }
+
+func (t *testStore) IsolationLevel() kvdb.IsolationLevel {
+	return kvdb.IsolationLevelBatch
+}
+
 func TestTester(t *testing.T) {
 	var result interface{}
 	tester := &Tester{
@@ -240,5 +363,5 @@ func TestTester(t *testing.T) {
 }
 
 func TestUtil(t *testing.T) {
-	TestDriver(func() kvdb.Driver { return &testStore{} }, t.Fatal)
+	TestDriver(func() kvdb.Driver { return &testStore{} }, func(args ...interface{}) { panic(args) })
 }
