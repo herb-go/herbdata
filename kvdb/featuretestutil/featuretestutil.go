@@ -490,7 +490,7 @@ func TestFeatureUpdate(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureTTLUpdate test driver FeatureTTLUpdate
 func TestFeatureTTLUpdate(driver kvdb.Driver, t *Tester) {
-	if driver.Features().SupportAll(kvdb.FeatureUpdate) {
+	if driver.Features().SupportAll(kvdb.FeatureTTLUpdate) {
 		var err error
 		var data []byte
 		var ok bool

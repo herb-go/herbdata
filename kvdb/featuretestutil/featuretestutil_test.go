@@ -1,6 +1,7 @@
 package featuretestutil
 
 import (
+	"fmt"
 	"sort"
 	"sync"
 	"testing"
@@ -363,5 +364,5 @@ func TestTester(t *testing.T) {
 }
 
 func TestUtil(t *testing.T) {
-	TestDriver(func() kvdb.Driver { return &testStore{} }, func(args ...interface{}) { panic(args) })
+	TestDriver(func() kvdb.Driver { return &testStore{} }, func(args ...interface{}) { fmt.Println(args...); panic("fatal") })
 }
