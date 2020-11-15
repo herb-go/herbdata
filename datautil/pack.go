@@ -69,12 +69,21 @@ func PackTo(w io.Writer, delimiter []byte, data ...[]byte) error {
 	return nil
 }
 func Join(delimiter []byte, data ...[]byte) []byte {
+	return Append(nil, delimiter, data...)
+}
+
+func Append(dst []byte, delimiter []byte, data ...[]byte) []byte {
 	buf := bytes.NewBuffer(nil)
-	err := PackTo(buf, delimiter, data...)
+	_, err := buf.Write(dst)
+	if err != nil {
+		panic(err)
+	}
+	err = PackTo(buf, delimiter, data...)
 	if err != nil {
 		panic(err)
 	}
 	return buf.Bytes()
+
 }
 func readLength(r io.Reader) (length int64, err error) {
 	defer func() {
