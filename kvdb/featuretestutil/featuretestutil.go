@@ -139,6 +139,11 @@ func TestFeatureTTLStore(driver kvdb.Driver, t *Tester) {
 		t.Assert(err == herbdata.ErrInvalidatedTTL, err)
 		data, err = driver.Get(KeySuccess)
 		t.Assert(err == herbdata.ErrNotFound, err)
+		err = driver.SetWithTTL(KeySuccess, DataSuccess, 0)
+		t.Assert(err == herbdata.ErrInvalidatedTTL, err)
+		data, err = driver.Get(KeySuccess)
+		t.Assert(err == herbdata.ErrNotFound, err)
+
 	}
 }
 
@@ -212,10 +217,19 @@ func TestFeatureTTLCounter(driver kvdb.Driver, t *Tester) {
 		t.Assert(err == herbdata.ErrInvalidatedTTL, err)
 		data, err = driver.GetCounter(KeySuccess)
 		t.Assert(data == 0 && err == nil, data, err)
+		err = driver.SetCounterWithTTL(KeySuccess, DataCounterSuccess, 0)
+		t.Assert(err == herbdata.ErrInvalidatedTTL, err)
+		data, err = driver.GetCounter(KeySuccess)
+		t.Assert(data == 0 && err == nil, data, err)
 		data, err = driver.IncreaseCounterWithTTL(KeySuccess, DataCounterSuccess, -1)
 		t.Assert(data == 0 && err == herbdata.ErrInvalidatedTTL, err)
 		data, err = driver.GetCounter(KeySuccess)
 		t.Assert(data == 0 && err == nil, data, err)
+		data, err = driver.IncreaseCounterWithTTL(KeySuccess, DataCounterSuccess, 0)
+		t.Assert(data == 0 && err == herbdata.ErrInvalidatedTTL, err)
+		data, err = driver.GetCounter(KeySuccess)
+		t.Assert(data == 0 && err == nil, data, err)
+
 		err = driver.DeleteCounter(KeySuccess)
 		t.Assert(err == nil, err)
 		err = driver.SetCounterWithTTL(KeySuccess, DataCounterSuccess, 3600)
@@ -459,6 +473,10 @@ func TestFeatureTTLInsert(driver kvdb.Driver, t *Tester) {
 		t.Assert(ok == false && err == herbdata.ErrInvalidatedTTL, err)
 		data, err = driver.Get(KeySuccess)
 		t.Assert(err == herbdata.ErrNotFound, data, err)
+		ok, err = driver.InsertWithTTL(KeySuccess, DataSuccess, 0)
+		t.Assert(ok == false && err == herbdata.ErrInvalidatedTTL, err)
+		data, err = driver.Get(KeySuccess)
+		t.Assert(err == herbdata.ErrNotFound, data, err)
 
 	}
 }
@@ -523,6 +541,10 @@ func TestFeatureTTLUpdate(driver kvdb.Driver, t *Tester) {
 		t.Assert(err == herbdata.ErrNotFound, data, err)
 
 		ok, err = driver.UpdateWithTTL(KeySuccess, DataSuccess, -1)
+		t.Assert(ok == false && err == herbdata.ErrInvalidatedTTL, err)
+		data, err = driver.Get(KeySuccess)
+		t.Assert(err == herbdata.ErrNotFound, data, err)
+		ok, err = driver.UpdateWithTTL(KeySuccess, DataSuccess, 0)
 		t.Assert(ok == false && err == herbdata.ErrInvalidatedTTL, err)
 		data, err = driver.Get(KeySuccess)
 		t.Assert(err == herbdata.ErrNotFound, data, err)
