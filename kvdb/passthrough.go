@@ -63,3 +63,12 @@ func (p *passthrough) UpdateWithTTL(key []byte, value []byte, ttl int64) (bool, 
 
 //Passthrough key value database which do not store any data
 var Passthrough = &passthrough{}
+
+//PassthroughFactory passthrough driver factory
+func PassthroughFactory(loader func(v interface{}) error) (Driver, error) {
+	return Passthrough, nil
+}
+
+func init() {
+	Register("passthrough", PassthroughFactory)
+}

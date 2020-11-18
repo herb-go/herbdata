@@ -9,6 +9,10 @@ func TestNop(t *testing.T) {
 	if nop.Features() != 0 || nop.IsolationLevel() != 0 {
 		t.Fatal()
 	}
+	err = nop.Start()
+	if err != nil {
+		t.Fatal()
+	}
 	err = nop.Set(nil, nil)
 	if err != ErrFeatureNotSupported {
 		t.Fatal(err)
@@ -74,7 +78,7 @@ func TestNop(t *testing.T) {
 	if err != ErrFeatureNotSupported {
 		t.Fatal(err)
 	}
-	err = nop.Close()
+	err = nop.Stop()
 	if err != nil {
 		t.Fatal()
 	}

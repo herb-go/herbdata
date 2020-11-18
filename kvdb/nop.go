@@ -5,8 +5,13 @@ package kvdb
 //All key-value database driver should implement Nop driver
 type Nop struct{}
 
-//Close close database
-func (n Nop) Close() error {
+//Start start database
+func (n Nop) Start() error {
+	return nil
+}
+
+//Stop stop database
+func (n Nop) Stop() error {
 	return nil
 }
 

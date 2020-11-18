@@ -58,27 +58,44 @@ func (t *Tester) Assert(ok bool, args ...interface{}) {
 	}
 }
 
+func createAndStart(creator func() kvdb.Driver) kvdb.Driver {
+	d := creator()
+	err := d.Start()
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+func mustStop(d kvdb.Driver) {
+	err := d.Stop()
+	if err != nil {
+		panic(err)
+	}
+}
+
 //TestDriver test kvdb driver
 func TestDriver(creator func() kvdb.Driver, fatal func(...interface{})) {
 	t := &Tester{Hanlder: fatal}
-	TestFeatureStore(creator(), t)
-	TestFeatureTTLStore(creator(), t)
-	TestFeatureStoreAndFeatureTTLStore(creator(), t)
-	TestFeatureCounter(creator(), t)
-	TestFeatureTTLCounter(creator(), t)
-	TestFeatureCounterAndFeatureTTLCounter(creator(), t)
-	TestFeatureStoreAndFeatureCounter(creator(), t)
-	TestFeatureTTLStoreAndFeatureTTLCounter(creator(), t)
-	TestFeatureNext(creator(), t)
-	TestFeatureInsert(creator(), t)
-	TestFeatureTTLInsert(creator(), t)
-	TestFeatureUpdate(creator(), t)
-	TestFeatureTTLUpdate(creator(), t)
-	TestFeatureTransaction(creator(), t)
+	TestFeatureStore(createAndStart(creator), t)
+	TestFeatureTTLStore(createAndStart(creator), t)
+	TestFeatureStoreAndFeatureTTLStore(createAndStart(creator), t)
+	TestFeatureCounter(createAndStart(creator), t)
+	TestFeatureTTLCounter(createAndStart(creator), t)
+	TestFeatureCounterAndFeatureTTLCounter(createAndStart(creator), t)
+	TestFeatureStoreAndFeatureCounter(createAndStart(creator), t)
+	TestFeatureTTLStoreAndFeatureTTLCounter(createAndStart(creator), t)
+	TestFeatureNext(createAndStart(creator), t)
+	TestFeatureInsert(createAndStart(creator), t)
+	TestFeatureTTLInsert(createAndStart(creator), t)
+	TestFeatureUpdate(createAndStart(creator), t)
+	TestFeatureTTLUpdate(createAndStart(creator), t)
+	TestFeatureTransaction(createAndStart(creator), t)
 }
 
 //TestFeatureStore test driver FeatureStore
 func TestFeatureStore(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	var err error
 	var data []byte
 	if driver.Features().SupportAll(kvdb.FeatureStore) {
@@ -103,9 +120,12 @@ func TestFeatureStore(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureTTLStore test driver FeatureTTLStore
 func TestFeatureTTLStore(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureTTLStore) {
 		var err error
 		var data []byte
+
 		_, err = driver.Get(KeyNotfound)
 		t.Assert(err == herbdata.ErrNotFound, err)
 		err = driver.Delete(KeyNotfound)
@@ -149,6 +169,8 @@ func TestFeatureTTLStore(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureStoreAndFeatureTTLStore test driver FeatureTTLStore and FeatureStore
 func TestFeatureStoreAndFeatureTTLStore(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureStore | kvdb.FeatureTTLStore) {
 		var err error
 		var data []byte
@@ -171,6 +193,8 @@ func TestFeatureStoreAndFeatureTTLStore(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureCounter test driver FeatureCounter
 func TestFeatureCounter(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureCounter) {
 		var err error
 		var data int64
@@ -208,6 +232,8 @@ func TestFeatureCounter(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureTTLCounter test driver FeatureTTLCounter
 func TestFeatureTTLCounter(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureTTLCounter) {
 		var err error
 		var data int64
@@ -283,6 +309,8 @@ func TestFeatureTTLCounter(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureCounterAndFeatureTTLCounter test driver FeatureCounter and FeatureTTLCounter
 func TestFeatureCounterAndFeatureTTLCounter(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureCounter | kvdb.FeatureTTLCounter) {
 		var err error
 		var data int64
@@ -314,6 +342,8 @@ func TestFeatureCounterAndFeatureTTLCounter(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureStoreAndFeatureCounter test driver FeatureStore and FeatureCounter
 func TestFeatureStoreAndFeatureCounter(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureStore | kvdb.FeatureCounter) {
 		var data []byte
 		var datacounter int64
@@ -335,6 +365,8 @@ func TestFeatureStoreAndFeatureCounter(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureTTLStoreAndFeatureTTLCounter test driver FeatureTTLStore and FeatureTTLCounter
 func TestFeatureTTLStoreAndFeatureTTLCounter(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureTTLStore | kvdb.FeatureTTLCounter) {
 		var data []byte
 		var datacounter int64
@@ -357,6 +389,8 @@ func TestFeatureTTLStoreAndFeatureTTLCounter(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureNext test driver FeatureNext
 func TestFeatureNext(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureNext) && driver.Features().SupportAny(kvdb.FeatureStore|kvdb.FeatureTTLStore) {
 		var err error
 		var keys [][]byte
@@ -410,6 +444,8 @@ func TestFeatureNext(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureInsert test driver FeatureInsert
 func TestFeatureInsert(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureInsert) {
 		var err error
 		var data []byte
@@ -435,6 +471,8 @@ func TestFeatureInsert(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureTTLInsert test driver FeatureInsert
 func TestFeatureTTLInsert(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureTTLInsert) {
 		var err error
 		var data []byte
@@ -483,6 +521,8 @@ func TestFeatureTTLInsert(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureUpdate test driver FeatureUpdate
 func TestFeatureUpdate(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureUpdate) {
 		var err error
 		var data []byte
@@ -508,6 +548,8 @@ func TestFeatureUpdate(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureTTLUpdate test driver FeatureTTLUpdate
 func TestFeatureTTLUpdate(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureTTLUpdate) {
 		var err error
 		var data []byte
@@ -554,6 +596,8 @@ func TestFeatureTTLUpdate(driver kvdb.Driver, t *Tester) {
 
 //TestFeatureTransaction test driver FeatureTransaction
 func TestFeatureTransaction(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
 	var err error
 	var data []byte
 	var trans kvdb.Transaction

@@ -111,3 +111,12 @@ func NewInMemory() *InMemory {
 		counters: map[string]int64{},
 	}
 }
+
+//InMemoryFactory in-memory driver factory
+func InMemoryFactory(loader func(v interface{}) error) (kvdb.Driver, error) {
+	return NewInMemory(), nil
+}
+
+func init() {
+	kvdb.Register("inmemory", InMemoryFactory)
+}
