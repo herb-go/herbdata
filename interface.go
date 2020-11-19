@@ -1,6 +1,6 @@
 package herbdata
 
-type Starter interface {
+type Server interface {
 	Start() error
 	Stop() error
 }
@@ -10,9 +10,9 @@ type Store interface {
 	Delete([]byte) error
 }
 
-type StoreStarter interface {
+type StoreServer interface {
 	Store
-	Starter
+	Server
 }
 type Deleter interface {
 	Delete([]byte) error
@@ -30,7 +30,7 @@ type Cache interface {
 	Delete([]byte) error
 }
 
-type CacheStarter interface {
+type CacheServer interface {
 	Cache
-	Starter
+	Server
 }

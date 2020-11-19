@@ -68,7 +68,11 @@ type Config struct {
 }
 
 func (c *Config) ApplyTo(db *Database) error {
-	d, err := NewDriver(c.Driver, c.Config)
+	return Apply(db, c.Driver, c.Config)
+}
+
+func Apply(db *Database, driver string, loader func(interface{}) error) error {
+	d, err := NewDriver(driver, loader)
 	if err != nil {
 		return err
 	}
