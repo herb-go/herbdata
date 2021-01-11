@@ -1,5 +1,7 @@
 package kvdb
 
+import "github.com/herb-go/herbdata"
+
 //Nop key-value database driver
 //All method except "Close" will raise an ErrFeatureNotSupported error.
 //All key-value database driver should implement Nop driver
@@ -31,7 +33,12 @@ func (n Nop) Delete(key []byte) error {
 }
 
 //Next return values after key not more than given limit
-func (n Nop) Next(iter []byte, limit int) (keys [][]byte, newiter []byte, err error) {
+func (n Nop) Next(iter []byte, limit int) (kv []herbdata.KeyValue, newiter []byte, err error) {
+	return nil, nil, ErrFeatureNotSupported
+}
+
+//Prev return values after key not more than given limit
+func (n Nop) Prev(iter []byte, limit int) (kv []herbdata.KeyValue, newiter []byte, err error) {
 	return nil, nil, ErrFeatureNotSupported
 }
 

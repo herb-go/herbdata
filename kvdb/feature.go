@@ -24,6 +24,8 @@ const (
 	FeatureTTLCounter
 	//FeatureNext key-value database next (Next) feature
 	FeatureNext
+	//FeaturePrev key-value database prev (Prev) feature
+	FeaturePrev
 	//FeatureInsert key-value database insert (Insert) feature
 	FeatureInsert
 	//FeatureTTLInsert key-value database ttl insert (InsertWithTTL) feature

@@ -85,6 +85,7 @@ func TestDriver(creator func() kvdb.Driver, fatal func(...interface{})) {
 	TestFeatureStoreAndFeatureCounter(createAndStart(creator), t)
 	TestFeatureTTLStoreAndFeatureTTLCounter(createAndStart(creator), t)
 	TestFeatureNext(createAndStart(creator), t)
+	TestFeaturePrev(createAndStart(creator), t)
 	TestFeatureInsert(createAndStart(creator), t)
 	TestFeatureTTLInsert(createAndStart(creator), t)
 	TestFeatureUpdate(createAndStart(creator), t)
@@ -393,7 +394,7 @@ func TestFeatureNext(driver kvdb.Driver, t *Tester) {
 	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureNext) && driver.Features().SupportAny(kvdb.FeatureStore|kvdb.FeatureTTLStore) {
 		var err error
-		var keys [][]byte
+		var kv []herbdata.KeyValue
 		_, _, err = driver.Next([]byte{}, 0)
 		t.Assert(err == kvdb.ErrUnsupportedNextLimit, err)
 		_, _, err = driver.Next([]byte{}, -1)
@@ -421,11 +422,66 @@ func TestFeatureNext(driver kvdb.Driver, t *Tester) {
 		result := []string{}
 		iter := []byte{}
 		for {
-			keys, iter, err = driver.Next(iter, 3)
+			kv, iter, err = driver.Next(iter, 3)
 			t.Assert(err == nil, err)
-			t.Assert(len(iter) == 0 || len(keys) == 3, keys, iter)
-			for _, v := range keys {
-				result = append(result, string(v))
+			t.Assert(len(iter) == 0 || len(kv) == 3, kv, iter)
+			for _, v := range kv {
+				result = append(result, string(v.Key))
+			}
+			if len(iter) == 0 {
+				break
+			}
+		}
+		target := make([]string, len(KeyListForNext))
+		copy(target, KeyListForNext)
+		sort.Strings(target)
+		sort.Strings(result)
+		t.Assert(len(target) == len(result), target, result)
+		for k := range result {
+			t.Assert(result[k] == target[k])
+		}
+	}
+}
+
+//TestFeaturePrev test driver FeatureNext
+func TestFeaturePrev(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
+	if driver.Features().SupportAll(kvdb.FeaturePrev) && driver.Features().SupportAny(kvdb.FeatureStore|kvdb.FeatureTTLStore) {
+		var err error
+		var kv []herbdata.KeyValue
+		_, _, err = driver.Prev([]byte{}, 0)
+		t.Assert(err == kvdb.ErrUnsupportedNextLimit, err)
+		_, _, err = driver.Prev([]byte{}, -1)
+		t.Assert(err == kvdb.ErrUnsupportedNextLimit, err)
+		for _, v := range KeyListForNext {
+			if driver.Features().SupportAny(kvdb.FeatureStore) {
+				err = driver.Set([]byte(v), DataSuccess)
+				t.Assert(err == nil, err)
+			}
+			if driver.Features().SupportAny(kvdb.FeatureTTLStore) {
+				err = driver.SetWithTTL([]byte(v), DataSuccess, 3600)
+				t.Assert(err == nil, err)
+			}
+		}
+		for _, v := range CounterKeyListForNext {
+			if driver.Features().SupportAny(kvdb.FeatureCounter) {
+				err = driver.SetCounter([]byte(v), DataCounterSuccess)
+				t.Assert(err == nil, err)
+			}
+			if driver.Features().SupportAny(kvdb.FeatureTTLCounter) {
+				err = driver.SetCounterWithTTL([]byte(v), DataCounterSuccess, 3600)
+				t.Assert(err == nil, err)
+			}
+		}
+		result := []string{}
+		iter := []byte{}
+		for {
+			kv, iter, err = driver.Prev(iter, 3)
+			t.Assert(err == nil, err)
+			t.Assert(len(iter) == 0 || len(kv) == 3, kv, iter)
+			for _, v := range kv {
+				result = append(result, string(v.Key))
 			}
 			if len(iter) == 0 {
 				break

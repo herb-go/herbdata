@@ -1,5 +1,7 @@
 package kvdb
 
+import "github.com/herb-go/herbdata"
+
 //Driver key value database driver interface
 type Driver interface {
 	//Start start database
@@ -14,9 +16,14 @@ type Driver interface {
 	Delete(key []byte) error
 	//Next return keys after iter not more than given limit
 	//Empty iter (nil or 0 length []byte) will start a new search
+	//Return keyvalue ,newiter and any error if raised.
+	//Empty iter (nil or 0 length []byte) will be returned if no more keys
+	Next(iter []byte, limit int) (kv []herbdata.KeyValue, newiter []byte, err error)
+	//Prev return keys before iter not more than given limit
+	//Empty iter (nil or 0 length []byte) will start a new search
 	//Return keys ,newiter and any error if raised.
 	//Empty iter (nil or 0 length []byte) will be returned if no more keys
-	Next(iter []byte, limit int) (keys [][]byte, newiter []byte, err error)
+	Prev(iter []byte, limit int) (kv []herbdata.KeyValue, newiter []byte, err error)
 	//SetWithTTL set value by given key and ttl in second.
 	SetWithTTL(key []byte, value []byte, ttlInSecond int64) error
 	//Begin begin new transaction
