@@ -33,12 +33,12 @@ func (n Nop) Delete(key []byte) error {
 }
 
 //Next return values after key not more than given limit
-func (n Nop) Next(iter []byte, limit int) (kv []herbdata.KeyValue, newiter []byte, err error) {
+func (n Nop) Next(iter []byte, limit int) (kv []*herbdata.KeyValue, newiter []byte, err error) {
 	return nil, nil, ErrFeatureNotSupported
 }
 
 //Prev return values after key not more than given limit
-func (n Nop) Prev(iter []byte, limit int) (kv []herbdata.KeyValue, newiter []byte, err error) {
+func (n Nop) Prev(iter []byte, limit int) (kv []*herbdata.KeyValue, newiter []byte, err error) {
 	return nil, nil, ErrFeatureNotSupported
 }
 

@@ -42,7 +42,8 @@ func (i *InMemory) Features() kvdb.Feature {
 	return kvdb.FeatureStable |
 		kvdb.FeatureStore |
 		kvdb.FeatureCounter |
-		kvdb.FeatureNext
+		kvdb.FeatureNext |
+		kvdb.FeatureEmbedded
 }
 
 //SetCounter set counter value with given key
@@ -82,12 +83,12 @@ func (i *InMemory) DeleteCounter(key []byte) error {
 }
 
 //Next return values after key not more than given limit
-func (i *InMemory) Next(iter []byte, limit int) (keys [][]byte, newiter []byte, err error) {
+func (i *InMemory) Next(iter []byte, limit int) (kv []*herbdata.KeyValue, newiter []byte, err error) {
 	if limit <= 0 {
 		return nil, nil, kvdb.ErrUnsupportedNextLimit
 	}
 	iterstr := string(iter)
-	result := [][]byte{}
+	result := []*herbdata.KeyValue{}
 	keylist := []string{}
 	i.values.Range(func(key interface{}, data interface{}) bool {
 		keylist = append(keylist, key.(string))
@@ -96,9 +97,10 @@ func (i *InMemory) Next(iter []byte, limit int) (keys [][]byte, newiter []byte, 
 	sort.Strings(keylist)
 	for _, v := range keylist {
 		if v > iterstr {
-			result = append(result, []byte(v))
+			data, _ := i.values.Load(string(v))
+			result = append(result, &herbdata.KeyValue{Key: []byte(v), Value: data.([]byte)})
 			if limit <= len(result) {
-				return result, result[len(result)-1], nil
+				return result, result[len(result)-1].Key, nil
 			}
 		}
 	}

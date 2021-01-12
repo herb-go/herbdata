@@ -164,14 +164,14 @@ func (t *testStore) Delete(key []byte) error {
 }
 
 //Next return values after key not more than given limit
-func (t *testStore) Next(iter []byte, limit int) (kv []herbdata.KeyValue, newiter []byte, err error) {
+func (t *testStore) Next(iter []byte, limit int) (kv []*herbdata.KeyValue, newiter []byte, err error) {
 	if limit <= 0 {
 		return nil, nil, kvdb.ErrUnsupportedNextLimit
 	}
 	t.locker.Lock()
 	defer t.locker.Unlock()
 	iterstr := string(iter)
-	result := []herbdata.KeyValue{}
+	result := []*herbdata.KeyValue{}
 	keylist := []string{}
 	t.m.Range(func(key interface{}, data interface{}) bool {
 		keylist = append(keylist, key.(string))
@@ -180,7 +180,7 @@ func (t *testStore) Next(iter []byte, limit int) (kv []herbdata.KeyValue, newite
 	sort.Strings(keylist)
 	for _, v := range keylist {
 		if iterstr == "" || v > iterstr {
-			result = append(result, herbdata.KeyValue{Key: []byte(v), Value: []byte(v)})
+			result = append(result, &herbdata.KeyValue{Key: []byte(v), Value: []byte(v)})
 			if limit <= len(result) {
 				return result, result[len(result)-1].Key, nil
 			}
@@ -190,14 +190,14 @@ func (t *testStore) Next(iter []byte, limit int) (kv []herbdata.KeyValue, newite
 }
 
 //Prev return values before key not more than given limit
-func (t *testStore) Prev(iter []byte, limit int) (kv []herbdata.KeyValue, newiter []byte, err error) {
+func (t *testStore) Prev(iter []byte, limit int) (kv []*herbdata.KeyValue, newiter []byte, err error) {
 	if limit <= 0 {
 		return nil, nil, kvdb.ErrUnsupportedNextLimit
 	}
 	t.locker.Lock()
 	defer t.locker.Unlock()
 	iterstr := string(iter)
-	result := []herbdata.KeyValue{}
+	result := []*herbdata.KeyValue{}
 	keylist := []string{}
 	t.m.Range(func(key interface{}, data interface{}) bool {
 		keylist = append(keylist, key.(string))
@@ -206,7 +206,7 @@ func (t *testStore) Prev(iter []byte, limit int) (kv []herbdata.KeyValue, newite
 	sort.Sort(sort.Reverse(sort.StringSlice(keylist)))
 	for _, v := range keylist {
 		if iterstr == "" || v < iterstr {
-			result = append(result, herbdata.KeyValue{Key: []byte(v), Value: []byte(v)})
+			result = append(result, &herbdata.KeyValue{Key: []byte(v), Value: []byte(v)})
 			if limit <= len(result) {
 				return result, result[len(result)-1].Key, nil
 			}

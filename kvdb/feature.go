@@ -40,4 +40,6 @@ const (
 	FeaturePersistent
 	//FeatureStable if data will not be droped in any case.
 	FeatureStable
+	//FeatureEmbedded if database is embedded.
+	FeatureEmbedded
 )

@@ -394,7 +394,7 @@ func TestFeatureNext(driver kvdb.Driver, t *Tester) {
 	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeatureNext) && driver.Features().SupportAny(kvdb.FeatureStore|kvdb.FeatureTTLStore) {
 		var err error
-		var kv []herbdata.KeyValue
+		var kv []*herbdata.KeyValue
 		_, _, err = driver.Next([]byte{}, 0)
 		t.Assert(err == kvdb.ErrUnsupportedNextLimit, err)
 		_, _, err = driver.Next([]byte{}, -1)
@@ -449,7 +449,7 @@ func TestFeaturePrev(driver kvdb.Driver, t *Tester) {
 	defer mustStop(driver)
 	if driver.Features().SupportAll(kvdb.FeaturePrev) && driver.Features().SupportAny(kvdb.FeatureStore|kvdb.FeatureTTLStore) {
 		var err error
-		var kv []herbdata.KeyValue
+		var kv []*herbdata.KeyValue
 		_, _, err = driver.Prev([]byte{}, 0)
 		t.Assert(err == kvdb.ErrUnsupportedNextLimit, err)
 		_, _, err = driver.Prev([]byte{}, -1)
