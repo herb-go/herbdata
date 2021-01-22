@@ -18,13 +18,13 @@ func (f DataURILoaderFunc) LoadDataURI(u *url.URL) ([]byte, error) {
 var lock sync.RWMutex
 var loaders = map[string]DataURILoader{}
 
-func Register(schema string, loader DataURILoader) {
+func Register(scheme string, loader DataURILoader) {
 	lock.Lock()
 	defer lock.Unlock()
-	loaders[schema] = loader
+	loaders[scheme] = loader
 }
 
-func Schemas() []string {
+func Schemes() []string {
 	lock.RLock()
 	defer lock.RUnlock()
 	results := make([]string, 0, len(loaders))
