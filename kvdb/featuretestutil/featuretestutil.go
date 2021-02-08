@@ -440,6 +440,44 @@ func TestFeatureNext(driver kvdb.Driver, t *Tester) {
 		for k := range result {
 			t.Assert(result[k] == target[k])
 		}
+
+		result = []string{}
+		iter = []byte("a1")
+		for {
+			kv, iter, err = driver.Next(iter, 3)
+			t.Assert(err == nil, err)
+			t.Assert(len(iter) == 0 || len(kv) == 3, kv, iter)
+			for _, v := range kv {
+				result = append(result, string(v.Key))
+			}
+			if len(iter) == 0 {
+				break
+			}
+		}
+		target = make([]string, len(KeyListForNext))
+		copy(target, KeyListForNext)
+		sort.Strings(target)
+		target = target[1:]
+		sort.Strings(result)
+		t.Assert(len(target) == len(result), target, result)
+		for k := range result {
+			t.Assert(result[k] == target[k])
+		}
+
+		result = []string{}
+		iter = []byte("z")
+		for {
+			kv, iter, err = driver.Next(iter, 3)
+			t.Assert(err == nil, err)
+			t.Assert(len(iter) == 0 || len(kv) == 3, kv, iter)
+			for _, v := range kv {
+				result = append(result, string(v.Key))
+			}
+			if len(iter) == 0 {
+				break
+			}
+		}
+		t.Assert(len(result) == 0)
 	}
 }
 
@@ -495,6 +533,44 @@ func TestFeaturePrev(driver kvdb.Driver, t *Tester) {
 		for k := range result {
 			t.Assert(result[k] == target[k])
 		}
+
+		result = []string{}
+		iter = []byte("i1")
+		for {
+			kv, iter, err = driver.Prev(iter, 3)
+			t.Assert(err == nil, err)
+			t.Assert(len(iter) == 0 || len(kv) == 3, kv, iter)
+			for _, v := range kv {
+				result = append(result, string(v.Key))
+			}
+			if len(iter) == 0 {
+				break
+			}
+		}
+		target = make([]string, len(KeyListForNext))
+		copy(target, KeyListForNext)
+		sort.Strings(target)
+		target = target[:len(target)-1]
+		sort.Strings(result)
+		t.Assert(len(target) == len(result), target, result)
+		for k := range result {
+			t.Assert(result[k] == target[k])
+		}
+
+		result = []string{}
+		iter = []byte("1")
+		for {
+			kv, iter, err = driver.Prev(iter, 3)
+			t.Assert(err == nil, err)
+			t.Assert(len(iter) == 0 || len(kv) == 3, kv, iter)
+			for _, v := range kv {
+				result = append(result, string(v.Key))
+			}
+			if len(iter) == 0 {
+				break
+			}
+		}
+		t.Assert(len(result) == 0)
 	}
 }
 
