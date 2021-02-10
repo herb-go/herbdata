@@ -34,3 +34,19 @@ type CacheServer interface {
 	Cache
 	Server
 }
+
+type SetterDeleter interface {
+	Set([]byte, []byte) error
+	Delete([]byte) error
+}
+
+type ExpiredSetter interface {
+	Set([]byte, []byte) error
+	SetWithExpired(key []byte, value []byte, expired int64) error
+}
+
+type ExpiredSetterDeleter interface {
+	Set([]byte, []byte) error
+	SetWithExpired(key []byte, value []byte, expired int64) error
+	Delete([]byte) error
+}

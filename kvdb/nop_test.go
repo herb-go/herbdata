@@ -21,6 +21,10 @@ func TestNop(t *testing.T) {
 	if err != ErrFeatureNotSupported {
 		t.Fatal(err)
 	}
+	err = nop.SetWithExpired(nil, nil, 0)
+	if err != ErrFeatureNotSupported {
+		t.Fatal(err)
+	}
 	_, err = nop.Get(nil)
 	if err != ErrFeatureNotSupported {
 		t.Fatal(err)

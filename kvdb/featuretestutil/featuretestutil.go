@@ -78,6 +78,7 @@ func TestDriver(creator func() kvdb.Driver, fatal func(...interface{})) {
 	t := &Tester{Hanlder: fatal}
 	TestFeatureStore(createAndStart(creator), t)
 	TestFeatureTTLStore(createAndStart(creator), t)
+	TestFeatureExpiredStore(createAndStart(creator), t)
 	TestFeatureStoreAndFeatureTTLStore(createAndStart(creator), t)
 	TestFeatureCounter(createAndStart(creator), t)
 	TestFeatureTTLCounter(createAndStart(creator), t)
@@ -165,6 +166,41 @@ func TestFeatureTTLStore(driver kvdb.Driver, t *Tester) {
 		data, err = driver.Get(KeySuccess)
 		t.Assert(err == herbdata.ErrNotFound, err)
 
+	}
+}
+
+//TestFeatureExpiredStore test driver FeatureExpiredStore
+func TestFeatureExpiredStore(driver kvdb.Driver, t *Tester) {
+	defer mustStop(driver)
+	defer mustStop(driver)
+	if driver.Features().SupportAll(kvdb.FeatureExpiredStore) {
+		var err error
+		var data []byte
+		_, err = driver.Get(KeyNotfound)
+		t.Assert(err == herbdata.ErrNotFound, err)
+		err = driver.Delete(KeyNotfound)
+		t.Assert(err == nil, err)
+		err = driver.SetWithExpired(KeySuccess, DataSuccess, time.Now().Unix()+3600)
+		t.Assert(err == nil, err)
+		data, err = driver.Get(KeySuccess)
+		t.Assert(err == nil && bytes.Compare(data, DataSuccess) == 0, data, err)
+		time.Sleep(time.Second)
+		data, err = driver.Get(KeySuccess)
+		t.Assert(err == nil && bytes.Compare(data, DataSuccess) == 0, data, err)
+		err = driver.SetWithExpired(KeySuccess, DataSuccess, time.Now().Unix()+3600+1)
+		t.Assert(err == nil, err)
+		data, err = driver.Get(KeySuccess)
+		t.Assert(err == nil && bytes.Compare(data, DataSuccess) == 0, data, err)
+		time.Sleep(2 * time.Second)
+		data, err = driver.Get(KeySuccess)
+		t.Assert(err == herbdata.ErrNotFound, err)
+		err = driver.SetWithExpired(KeySuccess, DataSuccess, time.Now().Unix()+3600)
+		t.Assert(err == nil, err)
+		data, err = driver.Get(KeySuccess)
+		t.Assert(err == nil && bytes.Compare(data, DataSuccess) == 0, data, err)
+		time.Sleep(time.Second)
+		data, err = driver.Get(KeySuccess)
+		t.Assert(err == nil && bytes.Compare(data, DataSuccess) == 0, data, err)
 	}
 }
 

@@ -47,6 +47,12 @@ func (n Nop) SetWithTTL(key []byte, value []byte, ttlInSecond int64) error {
 	return ErrFeatureNotSupported
 }
 
+//SetWithExpired set value by given key and expired timestamp.
+func (n Nop) SetWithExpired(key []byte, value []byte, expired int64) error {
+	return ErrFeatureNotSupported
+
+}
+
 //Begin begin new transaction
 func (n Nop) Begin() (Transaction, error) {
 	return nil, ErrFeatureNotSupported

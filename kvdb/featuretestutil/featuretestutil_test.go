@@ -107,7 +107,6 @@ func (t *testTransaction) SetWithTTL(key []byte, value []byte, ttl int64) error 
 		},
 	}
 	return nil
-
 }
 
 func newTestTransaction() *testTransaction {
@@ -225,6 +224,16 @@ func (t *testStore) SetWithTTL(key []byte, value []byte, ttl int64) error {
 	expired := time.Now().Unix() + ttl
 	t.m.Store(string(key), &entiy{data: value, expired: &expired})
 	return nil
+}
+
+//SetWithExpired set value by given key and expired timestamp.
+func (t *testStore) SetWithExpired(key []byte, value []byte, expired int64) error {
+	t.locker.Lock()
+	defer t.locker.Unlock()
+	exp := expired
+	t.m.Store(string(key), &entiy{data: value, expired: &exp})
+	return nil
+
 }
 
 //Begin begin new transaction

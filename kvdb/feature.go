@@ -18,6 +18,8 @@ const (
 	FeatureStore = Feature(1 << iota)
 	//FeatureTTLStore key-value database ttl store(SetWithTTL/Get/Delete) feature
 	FeatureTTLStore
+	//FeatureExpiredStore key-value database expired store(SetWithExpired/Get/Delete) feature
+	FeatureExpiredStore
 	//FeatureCounter key-value database counter(SetCounter/IncreaseCounter/GetCounter/DeleteCounter) feature
 	FeatureCounter
 	//FeatureTTLCounter key-value database counter(SetCounterWithTTL/IncreaseCounterWithTTL/GetCounter/DeleteCounter) feature

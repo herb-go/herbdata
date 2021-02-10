@@ -26,6 +26,8 @@ type Driver interface {
 	Prev(iter []byte, limit int) (kv []*herbdata.KeyValue, newiter []byte, err error)
 	//SetWithTTL set value by given key and ttl in second.
 	SetWithTTL(key []byte, value []byte, ttlInSecond int64) error
+	//SetWithExpired set value by given key and expired timestamp.
+	SetWithExpired(key []byte, value []byte, expired int64) error
 	//Begin begin new transaction
 	Begin() (Transaction, error)
 	//Insert insert value with given key.
