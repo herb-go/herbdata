@@ -2,6 +2,8 @@ package datacommand
 
 import "github.com/herb-go/herbdata"
 
+//Exec exec commnad on herbdata.SetterDeleter
+//Return ErrInvalidCommandType if command type invalid
 func Exec(c *Command, s herbdata.SetterDeleter) error {
 	switch c.Type {
 	case CommandTypeDelete:
@@ -12,6 +14,8 @@ func Exec(c *Command, s herbdata.SetterDeleter) error {
 	return ErrInvalidCommandType
 }
 
+//ExecWithExpired exec commnad on herbdata.ExpiredSetterDeleter
+//Return ErrInvalidCommandType if command type invalid
 func ExecWithExpired(c *Command, s herbdata.ExpiredSetterDeleter) error {
 	switch c.Type {
 	case CommandTypeDelete:
