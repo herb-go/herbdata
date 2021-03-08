@@ -13,6 +13,9 @@ func (f Feature) SupportAny(dst Feature) bool {
 	return f&dst != 0
 }
 
+//FeaturesSetEmpty empty feature set
+const FeaturesSetEmpty = Feature(0)
+
 const (
 	//FeatureStore key-value database store(Set/Get/Delete) feature
 	FeatureStore = Feature(1 << iota)
