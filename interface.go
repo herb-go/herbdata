@@ -30,6 +30,25 @@ type Cache interface {
 	Delete([]byte) error
 }
 
+type Revocable interface {
+	Revoke() error
+}
+
+type RevocableCache interface {
+	Revocable
+	Cache
+}
+
+type NestedCache interface {
+	GetNested(key []byte, path ...[]byte) ([]byte, error)
+	SetWithTTLNested(key []byte, value []byte, ttl int64, path ...[]byte) error
+	DeleteNested(key []byte, path ...[]byte) error
+}
+
+type RevocableNestedCache interface {
+	NestedCache
+	RevokeNested(path ...[]byte) error
+}
 type CacheServer interface {
 	Cache
 	Server

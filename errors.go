@@ -16,3 +16,6 @@ var ErrKeyTooLarge = errors.New("data key too large")
 
 // ErrInvalidatedTTL error raised if given key invalidated
 var ErrInvalidatedTTL = errors.New("invalidated ttl")
+
+//ErrIrrevocable error  raised if irrevocable
+var ErrIrrevocable = errors.New("irrevocable")
