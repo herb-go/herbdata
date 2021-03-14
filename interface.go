@@ -39,15 +39,15 @@ type RevocableCache interface {
 	Cache
 }
 
-type NestedCache interface {
-	GetNested(key []byte, path ...[]byte) ([]byte, error)
-	SetWithTTLNested(key []byte, value []byte, ttl int64, path ...[]byte) error
-	DeleteNested(key []byte, path ...[]byte) error
+type NamespacedCache interface {
+	GetNamespaced(namespace []byte, key []byte) ([]byte, error)
+	SetWithTTLNamespaced(namespace []byte, key []byte, value []byte, ttl int64) error
+	DeleteNamespaced(namespace []byte, key []byte) error
 }
 
-type RevocableNestedCache interface {
-	NestedCache
-	RevokeNested(path ...[]byte) error
+type RevocableNamespacedCache interface {
+	NamespacedCache
+	RevokeNamespaced(namespace []byte) error
 }
 type CacheServer interface {
 	Cache
