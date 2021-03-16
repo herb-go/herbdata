@@ -24,31 +24,26 @@ type Getter interface {
 	Get([]byte) ([]byte, error)
 }
 
+type SetterGetter interface {
+	Setter
+	Getter
+}
+type SetterGetterServer interface {
+	Setter
+	Getter
+	Server
+}
 type Cache interface {
 	Get([]byte) ([]byte, error)
 	SetWithTTL(key []byte, value []byte, ttl int64) error
 	Delete([]byte) error
 }
 
-type Revocable interface {
-	Revoke() error
-}
-
 type RevocableCache interface {
-	Revocable
+	Revoke() error
 	Cache
 }
 
-type NamespacedCache interface {
-	GetNamespaced(namespace []byte, key []byte) ([]byte, error)
-	SetWithTTLNamespaced(namespace []byte, key []byte, value []byte, ttl int64) error
-	DeleteNamespaced(namespace []byte, key []byte) error
-}
-
-type RevocableNamespacedCache interface {
-	NamespacedCache
-	RevokeNamespaced(namespace []byte) error
-}
 type CacheServer interface {
 	Cache
 	Server
