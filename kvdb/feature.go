@@ -41,10 +41,10 @@ const (
 	FeatureTTLUpdate
 	//FeatureTransaction key-value database transactio(Begin) feature
 	FeatureTransaction
-	//FeaturePersistent  if data will be Persistent and kept after application restart
-	FeaturePersistent
-	//FeatureStable if data will not be droped in any case.
-	FeatureStable
+	//FeatureNonpersistent  if data will be drop after application restart
+	FeatureNonpersistent
+	//FeatureUnstable if data may be droped if needed.
+	FeatureUnstable
 	//FeatureEmbedded if database is embedded.
 	FeatureEmbedded
 )

@@ -16,6 +16,12 @@ type InMemory struct {
 	counters      map[string]int64
 }
 
+//Apply InMemory to key-value database
+func (i *InMemory) ApplyTo(db *kvdb.Database) error {
+	db.Driver = i
+	return nil
+}
+
 //Set set value by given key
 func (i *InMemory) Set(key []byte, value []byte) error {
 	i.values.Store(string(key), value)
@@ -39,8 +45,7 @@ func (i *InMemory) Delete(key []byte) error {
 
 //Features return supported features
 func (i *InMemory) Features() kvdb.Feature {
-	return kvdb.FeatureStable |
-		kvdb.FeatureStore |
+	return kvdb.FeatureStore |
 		kvdb.FeatureCounter |
 		kvdb.FeatureNext |
 		kvdb.FeatureEmbedded
