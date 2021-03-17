@@ -64,3 +64,9 @@ type ExpiredSetterDeleter interface {
 	SetWithExpired(key []byte, value []byte, expired int64) error
 	Delete([]byte) error
 }
+
+type NestableCache interface {
+	RevocableCache
+	NamescapedCache([]byte) NestableCache
+	ChildCache([]byte) NestableCache
+}
