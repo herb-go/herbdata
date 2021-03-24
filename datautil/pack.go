@@ -20,8 +20,8 @@ const maxPackLengthNext8Byte = int64(uint64(1 << 62))
 
 var DelimiterZero = []byte{0}
 
-func getLengthBytes(data []byte) []byte {
-	l := int64(len(data))
+func getLengthBytes(length int) []byte {
+	l := int64(length)
 	var result []byte
 	if l <= maxPackLengthByte {
 		return []byte{byte(l)}
@@ -47,26 +47,40 @@ func getLengthBytes(data []byte) []byte {
 	return result
 }
 
-func PackTo(w io.Writer, delimiter []byte, data ...[]byte) error {
+func WriteLengthBytes(w io.Writer, length int) (int, error) {
+	return w.Write(getLengthBytes(length))
+}
+func WriteTo(w io.Writer, delimiter []byte, data ...[]byte) (int, error) {
 	var err error
 	var writeDelimiter = len(delimiter) > 0
+	var written int
+	var n int
 	for k := range data {
-		_, err = w.Write(getLengthBytes(data[k]))
+		n, err = WriteLengthBytes(w, len(data[k]))
 		if err != nil {
-			return err
+			return 0, err
 		}
-		_, err = w.Write(data[k])
+		written += n
+		n, err = w.Write(data[k])
 		if err != nil {
-			return err
+			return 0, err
 		}
+		written += n
+
 		if writeDelimiter {
-			_, err = w.Write(delimiter)
+			n, err = w.Write(delimiter)
 			if err != nil {
-				return err
+				return 0, err
 			}
 		}
+		written += n
+
 	}
-	return nil
+	return written, nil
+}
+func PackTo(w io.Writer, delimiter []byte, data ...[]byte) error {
+	_, err := WriteTo(w, delimiter, data...)
+	return err
 }
 func Join(delimiter []byte, data ...[]byte) []byte {
 	return Append(nil, delimiter, data...)

@@ -67,6 +67,5 @@ type ExpiredSetterDeleter interface {
 
 type NestableCache interface {
 	RevocableCache
-	NamescapedCache([]byte) NestableCache
-	ChildCache([]byte) NestableCache
+	SubCache([]byte) NestableCache
 }
