@@ -39,8 +39,8 @@ type Cache interface {
 	Delete([]byte) error
 }
 
-type RevocableCache interface {
-	Revoke() error
+type FlushableCache interface {
+	Flush() error
 	Cache
 }
 
@@ -66,6 +66,6 @@ type ExpiredSetterDeleter interface {
 }
 
 type NestableCache interface {
-	RevocableCache
+	FlushableCache
 	SubCache([]byte) NestableCache
 }
