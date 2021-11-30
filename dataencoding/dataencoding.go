@@ -12,3 +12,12 @@ func (e *Encoding) MarshalData(v interface{}) ([]byte, error) {
 func (e *Encoding) UnmarshalData(data []byte, v interface{}) error {
 	return e.Unmarshal(data, v)
 }
+
+var NopEncoding = &Encoding{
+	Marshal: func(v interface{}) ([]byte, error) {
+		return nil, ErrEncodingUnavailable
+	},
+	Unmarshal: func(data []byte, v interface{}) error {
+		return ErrEncodingUnavailable
+	},
+}
