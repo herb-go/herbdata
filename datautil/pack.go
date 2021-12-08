@@ -85,7 +85,13 @@ func PackTo(w io.Writer, delimiter []byte, data ...[]byte) error {
 func Join(delimiter []byte, data ...[]byte) []byte {
 	return Append(nil, delimiter, data...)
 }
-
+func JoinStrings(data ...string) string {
+	var bytes = make([][]byte, len(data))
+	for k := range data {
+		bytes[k] = []byte(data[k])
+	}
+	return string(Join(nil, bytes...))
+}
 func Append(dst []byte, delimiter []byte, data ...[]byte) []byte {
 	buf := bytes.NewBuffer(nil)
 	_, err := buf.Write(dst)
